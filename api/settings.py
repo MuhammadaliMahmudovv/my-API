@@ -11,16 +11,19 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+import os
+env = environ.ENV(DEBUG=(bool,False))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-yt7@hj8)*#3%idu)oanqpa8j^%jt=dk3i5(9tzmt2s&p5%#@q7"
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -75,13 +78,13 @@ WSGI_APPLICATION = "api.wsgi.application"
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'myapi_db',  
-        'USER': 'postgres',      
-        'PASSWORD': '24132315', 
-        'HOST': 'localhost',     
-        'PORT': '5432',         
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "myapi_db",
+        "USER": "postgres",
+        "PASSWORD": "24132315",
+        "HOST": "localhost",
+        "PORT": "5432",
     }
 }
 
