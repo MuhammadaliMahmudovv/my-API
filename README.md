@@ -9,14 +9,13 @@ Production-ready REST API based on Django + PostgreSQL.
 - Django
 - Django REST Framework
 - PostgreSQL
-- Docker (optional)
 
 ---
 
 ## 🛠 How to run locally
 
 ```bash
-git clone <your repo>
+git clone <https://github.com/MuhammadaliMahmudovv/my-API.git>
 cd my-api
 
 pip install -r requirements.txt
@@ -25,3 +24,4 @@ cp .env.example .env
 
 python manage.py migrate
 python manage.py runserver
+
