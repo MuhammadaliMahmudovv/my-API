@@ -37,7 +37,7 @@
 
 ## 🔐 JWT Authentication
 Проект использует JWT-аутентификацию (SimpleJWT).
-
+```bash
 Получение токена:
 POST /api/token/
 
@@ -52,7 +52,7 @@ POST /api/token/refresh/
 
 Для доступа к защищённым эндпоинтам необходимо передавать заголовок:
 Authorization: Bearer <access_token>
-
+```
 ## 📦 Установка и запуск
 ```bash
 1) Клонировать репозиторий
@@ -77,4 +77,5 @@ docker compose exec web python manage.py migrate
 
 Создать суперпользователя:
 docker compose exec web python manage.py createsuperuser
+```
 
