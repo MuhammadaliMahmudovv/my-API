@@ -1,10 +1,16 @@
 from django.shortcuts import render
-from rest_framework.decorators import api_view
+from rest_framework import viewsets
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from .models import CustomUser, Profile
 from .serializers import CustomUserSerializer, ProfileSerializer
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (
+    IsAuthenticated,
+    AllowAny,
+    IsAdminUser,
+    IsAuthenticatedOrReadOnly,
+)
 
 
 class ProtectedHello(APIView):
@@ -14,87 +20,34 @@ class ProtectedHello(APIView):
         return Response({"message": "Hello, authenticated user!"})
 
 
-@api_view(["GET"])
-def CustomUserList(request):
-    user = CustomUser.objects.filter(is_staff=False).order_by("-created_at")
-    serializer = CustomUserSerializer(user, many=True)
-    return Response(serializer.data)
-
-
-@api_view(["GET"])
-def CustomUserDetailView(request, pk):
-    user = CustomUser.objects.filter(is_staff=False).get(pk=pk)
-    serializer = CustomUserSerializer(user, many=False)
-    return Response(serializer.data)
-
-
-@api_view(["POST"])
-def CustomUserCreate(request):
-    serializer = CustomUserSerializer(data=request.data)
-
-    if serializer.is_valid():
-        serializer.save()
-
-    return Response(serializer.data)
-
-
-@api_view(["POST"])
-def CustomUserUpdate(request, pk):
-    user = CustomUser.objects.get(pk=pk)
-    serializer = CustomUserSerializer(instance=user, data=request.data)
-
-    if serializer.is_valid():
-        serializer.save()
-
-    return Response(serializer.data)
-
-
-@api_view(["DELETE"])
-def CustomUserDelete(request, pk):
-    user = CustomUser.objects.get(pk=pk).delete()
-
-    return Response("user succsesfully deleted!")
-
-
 # --
 
-
-@api_view(["GET"])
-def ProfileList(request):
-    profile = Profile.objects.all()
-    serializer = ProfileSerializer(profile, many=True)
-    return Response(serializer.data)
-
-
-@api_view(["GET"])
-def ProfileDetailView(request, pk):
-    profile = Profile.objects.get(pk=pk)
-    serializer = ProfileSerializer(profile, many=False)
-    return Response(serializer.data)
+# ModelViewSet по умолчанию включает операции:
+# - list: список всех объектов
+# - retrieve: просмотр одного объекта
+# - create: создание объекта
+# - update/partial_update: изменение объекта
+# - destroy: удаление объекта
 
 
-@api_view(["POST"])
-def ProfileCreate(request):
-    serializer = ProfileSerializer(data=request.data)
+class CustomUserViewSet(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.filter(is_staff=False).order_by("-created_at")
+    serializer_class = CustomUserSerializer
 
-    if serializer.is_valid():
-        serializer.save()
-
-    return Response(serializer.data)
-
-    
-@api_view(["POST"])
-def ProfileUpdate(request, pk):
-    profile = Profile.objects.get(pk=pk)
-    serializer = ProfileSerializer(instance=profile, data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-
-    return Response(serializer.data)
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
 
-@api_view(["DELETE"])
-def profileDelete(request, pk):
-    profile = Profile.objects.get(pk=pk).delete()
+class ProfileViewSet(viewsets.ModelViewSet):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
 
-    return Response("profile succsesfully deleted!")
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        return Profile.objects.filter(user=self.request.user)
