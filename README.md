@@ -11,7 +11,8 @@
 ✔ Docker + PostgreSQL  
 ✔ Переменные окружения через `.env`  
 ✔ Cоздание суперпользователя  
-✔ Планы по JWT-авторизацию и защищённые эндпоинты  
+✔ JWT-аутентификация (access / refresh)  
+✔ Защищённые эндпоинты
 
 ---
 
@@ -30,10 +31,28 @@
 - views (API)
 - serializers
 - URLs  
-- Docker-окружение
+- Docker-окружение (В Docker-контейнере в качестве HOST используется `db`, а не `localhost`)
 
 ---
 
+## 🔐 JWT Authentication
+Проект использует JWT-аутентификацию (SimpleJWT).
+```bash
+Получение токена:
+POST /api/token/
+
+Пример тела запроса:
+{
+  "username": "admin",
+  "password": "password"
+}
+
+Обновление токена:
+POST /api/token/refresh/
+
+Для доступа к защищённым эндпоинтам необходимо передавать заголовок:
+Authorization: Bearer <access_token>
+```
 ## 📦 Установка и запуск
 ```bash
 1) Клонировать репозиторий
@@ -58,3 +77,5 @@ docker compose exec web python manage.py migrate
 
 Создать суперпользователя:
 docker compose exec web python manage.py createsuperuser
+```
+
