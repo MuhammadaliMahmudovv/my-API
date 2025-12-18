@@ -13,8 +13,9 @@ router.register(r"profiles-list", views.ProfileViewSet, basename="profiles-list"
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("register/", views.RegisterAPIView.as_view(), name="register"),
     # -
-    path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    path("token/logout/", TokenBlacklistView.as_view(), name="token_blacklist"),
+    path("login/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("logout/", TokenBlacklistView.as_view(), name="token_blacklist"),
 ]
