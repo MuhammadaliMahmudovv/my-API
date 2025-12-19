@@ -15,6 +15,11 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ["id", "user", "bio", "age"]
 
 
+class ChangePasswordSerializer(serializers.ModelSerializer):
+    old_password = serializers.CharField()
+    new_password = serializers.CharField(min_length=8)
+
+
 class RegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
 
