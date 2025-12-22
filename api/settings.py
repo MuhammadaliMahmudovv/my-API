@@ -5,11 +5,12 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 import os
 
+# --- #
 env = environ.Env(DEBUG=(bool, False))
-
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 SECRET_KEY = env("SECRET_KEY")
-
-DEBUG = True
+DEBUG = env("DEBUG")
+# --- #
 
 ALLOWED_HOSTS = []
 
@@ -23,6 +24,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "app",
     "rest_framework",
+    "django_filters",
     "rest_framework_simplejwt",
 ]
 
@@ -60,8 +62,19 @@ WSGI_APPLICATION = "api.wsgi.application"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-    )
+    ),
 }
+"""
+1. Глобальная настройка (через settings.py)
+Если вы пропишете DEFAULT_PAGINATION_CLASS в настройках, то все ваши списки (ListAPIView) будут автоматически использовать эту пагинацию.
+Важно: Если вы указываете глобальный класс пагинации, вы также обязаны указать PAGE_SIZE, иначе пагинация просто не будет работать.
+
+--
+
+2. Локальная настройка (в конкретном View)
+Если вам нужна пагинация только в определенных местах или вы хотите использовать разные стили пагинации для разных эндпоинтов, лучше указывать её прямо в контроллере. 
+В этом случае настройки в settings.py не нужны.
+"""
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
@@ -70,9 +83,11 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
 }
 
-environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+
 env = environ.Env(DATABASE_URL=(str, f'sqlite:///{BASE_DIR / "db.sqlite3"}'))
-DATABASES = {"default": env.db()}
+DATABASES = {
+    "default": env.db("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
+}
 # --- #
 
 

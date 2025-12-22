@@ -2,16 +2,21 @@ from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from .models import CustomUser, Profile
+from rest_framework.filters import OrderingFilter, SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
+from .models import CustomUser, Profile, Posts
 from .serializers import (
     CustomUserSerializer,
     ProfileSerializer,
     RegistrationSerializer,
     ChangePasswordSerializer,
+    PostsSerializer,
 )
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 from .permissions import IsOwnerOrAdmin
+from .paginations import PostPagination
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
     IsAuthenticated,
     AllowAny,
@@ -121,7 +126,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             return [IsAdminUser()]
         return [IsAuthenticated(), IsOwnerOrAdmin()]
 
-    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated()])
     def me(self, request):
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
@@ -129,7 +134,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     @action(
         detail=False,
         methods=["post"],
-        permission_classes=[IsAuthenticated],
+        permission_classes=[IsAuthenticated()],
         url_path="change-password",
     )
     def change_password(self, request):
@@ -179,7 +184,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
 
 class ProfileViewSet(viewsets.ModelViewSet):
     serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+    permission_classes = [IsAuthenticated(), IsOwnerOrAdmin()]
 
     def get_queryset(self):
         if self.request.user.is_staff:
@@ -188,9 +193,43 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 
 class RegisterAPIView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [AllowAny()]
+
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"detail": "User created"}, status=status.HTTP_201_CREATED)
+
+
+class PostsViewSet(viewsets.ModelViewSet):
+    queryset = Posts.objects.all()
+    serializer_class = PostsSerializer
+    pagination_class = PostPagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    filterset_fields = []
+    ordering_fields = ["created_at"]
+    ordering = ["-created_at"]
+    search_fields = ["title"]
+
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            return [AllowAny()]
+        return [IsAuthenticated(), IsOwnerOrAdmin()]
+
+    @action(
+        detail=False,
+        url_path="my-posts",
+        methods=["get"],
+        permission_classes=[IsAuthenticated],
+    )
+    def my_posts(self, request):
+        queryset = self.get_queryset().filter(author=request.user)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

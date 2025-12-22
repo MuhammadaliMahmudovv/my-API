@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, Profile
+from .models import CustomUser, Profile, Posts
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -34,3 +34,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
             password=validated_data["password"],
         )
         return user
+
+
+
+class PostsSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField()
+    class Meta:
+        model = Posts
+        fields = ["user", "title", "description"]
