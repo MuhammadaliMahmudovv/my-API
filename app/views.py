@@ -112,7 +112,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 
 class RegisterAPIView(APIView):
-    permission_classes = [AllowAny()]
+    permission_classes = [AllowAny]
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "register_limit"
 

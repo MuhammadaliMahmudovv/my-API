@@ -69,7 +69,7 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.ScopedRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "anon": "10/day",
+        "anon": "50/day",
         "user": "1000/hour",
         "register_limit": "3/hour",
     },

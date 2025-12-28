@@ -27,6 +27,20 @@ class RegistrationSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ["name", "email", "password"]
 
+    def validate_name(self, value):
+        if len(value) < 3:
+            raise serializers.ValidationError("Имя слишком корокое!")
+        if "admin" in value.lower():
+            raise serializers.ValidationError("Имя не может содержать слово 'admin'.")
+        return value
+
+    def validate_email(self, value):
+        if value in CustomUser.objects.values_list("email", flat=True):
+            raise serializers.ValidationError(
+                "Этот адрес электронной почты уже используется."
+            )
+        return value
+
     def create(self, validated_data):
         user = CustomUser.objects.create_user(
             name=validated_data["name"],
@@ -36,9 +50,22 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return user
 
 
-
 class PostsSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
+
     class Meta:
         model = Posts
         fields = ["user", "title", "description"]
+
+
+"""
+
+Если вам нужен просто список строк, используйте метод values_list. Параметр flat=True превращает список кортежей в обычный список значений.
+# Получаем плоский список: ['user1@mail.com', 'user2@mail.com', ...]
+emails = CustomUser.objects.values_list('email', flat=True)
+
+for email in emails:
+    print(email)
+    
+    
+"""

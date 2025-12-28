@@ -33,7 +33,7 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=50, unique=True)
-    email = models.EmailField(blank=True, null=True)
+    email = models.EmailField(unique=True, blank=True, null=True)
     password = models.CharField(max_length=128, blank=True, null=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
