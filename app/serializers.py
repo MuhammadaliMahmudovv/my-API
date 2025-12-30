@@ -15,6 +15,19 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ["id", "user", "bio", "age"]
 
 
+class ProfileImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ["avatar"]
+        
+    def validate_avatar(self, file):
+        if not file.content_type.startswith("image/"):
+            raise serializers.ValidationError("Только изображения")
+        if file.size > 2 * 1024 * 1024:
+            raise serializers.ValidationError("Файл слишком большой")
+        return file
+
+
 class ChangePasswordSerializer(serializers.ModelSerializer):
     old_password = serializers.CharField()
     new_password = serializers.CharField(min_length=8)

@@ -25,6 +25,7 @@ from .serializers import (
     RegistrationSerializer,
     ChangePasswordSerializer,
     PostsSerializer,
+    ProfileImageSerializer,
 )
 
 
@@ -109,6 +110,22 @@ class ProfileViewSet(viewsets.ModelViewSet):
         if self.request.user.is_staff:
             return Profile.objects.all()
         return Profile.objects.filter(user=self.request.user)
+
+
+from rest_framework.parsers import MultiPartParser, FormParser
+
+
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def patch(self, request):
+        serializer = ProfileImageSerializer(
+            request.user.profile, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 class RegisterAPIView(APIView):
